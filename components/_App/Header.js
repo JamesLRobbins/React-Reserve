@@ -2,19 +2,28 @@ import { Menu, Container, Image, Icon} from 'semantic-ui-react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import NProgress from 'nprogress';
+import { handleLogout } from '../../utils/auth';
 
 Router.onRouteChangeStart = () => NProgress.start()
 Router.onRouteChangeComplete = () => NProgress.done();
 Router.onRouteChangeError = () => NProgress.done();
 
-function Header() {
-  const user = true;
+function Header({ user }) {
+  console.log(user)
+  const router = useRouter();
+  const isRoot = user && user.role === 'root';
+  const isAdmin = user && user.role === 'admin';
+  const isRootOrAdmin = isRoot || isAdmin;
+
+  function isActive(route) {
+    return route === router.pathname;
+  }
 
   return (
-    <Menu fluid id="menu" inverted>
+    <Menu stackable fluid id="menu" inverted>
       <Container text>
         <Link href="/">
-          <Menu.Item header>
+          <Menu.Item header active={isActive("/")}>
             <Image 
               size="mini"
               src="/static/logo.svg"
@@ -25,7 +34,7 @@ function Header() {
         </Link>
 
         <Link href="/cart">
-          <Menu.Item header>
+          <Menu.Item header active={isActive("/cart")}>
             <Icon
               name="cart"
               size="large"
@@ -34,8 +43,8 @@ function Header() {
           </Menu.Item>
         </Link>
 
-        {!user && <Link href="/create">
-          <Menu.Item header>
+        {isRootOrAdmin && <Link href="/create">
+          <Menu.Item header active={isActive("/create")}>
             <Icon
               name="add square"
               size="large"
@@ -46,7 +55,7 @@ function Header() {
 
         {user ? (<>
         <Link href="/account">
-          <Menu.Item header>
+          <Menu.Item header active={isActive("/account")}>
             <Icon
               name="user"
               size="large"
@@ -55,7 +64,7 @@ function Header() {
           </Menu.Item>
         </Link>
      
-          <Menu.Item header>
+          <Menu.Item onClick={handleLogout} header>
             <Icon
               name="sign out"
               size="large"
@@ -66,7 +75,7 @@ function Header() {
           :
           (<>
           <Link href="/login">
-          <Menu.Item header>
+          <Menu.Item header active={isActive("/login")}>
             <Icon
               name="sign in"
               size="large"
@@ -76,7 +85,7 @@ function Header() {
         </Link>
 
         <Link href="/signup">
-          <Menu.Item header>
+          <Menu.Item header active={isActive("/signup")}>
             <Icon
               name="signup"
               size="large"
